@@ -1,0 +1,395 @@
+Ubuntu16.04 64位机上安装cuda8.0+cudnn7.0操作步骤 
+
+
+
+1.  依次执行：前面的命令是为了验证主机是否满足cuda8.0安装的要求
+
+    lspci | grep -i nvidia  
+    uname -m && /etc/*release  
+    gcc --version  
+    uname -r  
+    sudoapt-get install linux-headers-$(uname -r)  
+    sudo sh cuda_8.0.27_linux.run  
+	前面的步骤确定可以安装CUDA软件，安装遵循以下步骤
+2.    卸载nvidia现有驱动，确定nvidia原有驱动被正确删除，否则，会出现loop login 现象
+
+	sudo apt-get purge nvidia-*
+
+3.    安装新的nvidia驱动，注意版本号，不需要禁止任何设置
+
+使用如下命令添加Graphic Drivers PPA：
+
+sudo add-apt-repository ppa:graphics-drivers/ppa
+sudo apt-get update
+
+
+
+寻找合适的驱动版本：
+
+ubuntu-drivers devices
+
+
+	sudo apt-get install nvidia-384
+
+	（该方法不需要关闭nouveau和lightdm，如果出现依赖问题可以尝试换源。）
+4.    重启电脑，输入nvidia-smi，确认显卡安装
+Wed Apr 18 15:07:22 2018       
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 384.111                Driver Version: 384.111                   |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|===============================+======================+======================|
+|   0  TITAN X (Pascal)    Off  | 00000000:01:00.0  On |                  N/A |
+| 23%   33C    P8    11W / 250W |    151MiB / 12188MiB |      0%      Default |
++-------------------------------+----------------------+----------------------+
+                                                                               
++-----------------------------------------------------------------------------+
+| Processes:                                                       GPU Memory |
+|  GPU       PID   Type   Process name                             Usage      |
+|=============================================================================|
+|    0     10254      G   /usr/lib/xorg/Xorg                            98MiB |
+|    0     10823      G   compiz                                        41MiB |
+|    0     11096      G   fcitx-qimpanel                                 9MiB |
++-----------------------------------------------------------------------------+
+
+
+5. If you havn't a GPU, you do not need run later, just go home. 
+ 
+下载CUDA
+给出cuda下载地址（含历史版本）：
+
+https://developer.nvidia.com/cuda-toolkit-archive
+
+选择合适的版本。
+本安装下载cuda8.0
+linux--->x86_64--->Ubuntu--->16.04--->runfile(local)
+
+
+6.安装cuda
+cd Downloads
+
+sudo sh cuda_8.0.61_375.26_linux.run
+
+运行cuda文件，确定
+
+ Do you accept the previously read EULA?
+accept/decline/quit:accept
+
+
+Install NVIDIA Accelerated Graphics Driver for Linux-x86_64 375.26?
+(y)es/(n)o/(q)uit: n
+
+
+Install the CUDA 8.0 Toolkit?
+(y)es/(n)o/(q)uit: y
+
+
+Enter Toolkit Location
+ [ default is /usr/local/cuda-8.0 ]: 
+
+
+Do you want to install a symbolic link at /usr/local/cuda?
+(y)es/(n)o/(q)uit: y
+
+
+Install the CUDA 8.0 Samples?
+(y)es/(n)o/(q)uit: y
+
+
+Enter CUDA Samples Location
+ [ default is /home/explorer ]: 
+
+
+Installing the CUDA Toolkit in /usr/local/cuda-8.0 ...
+Missing recommended library: libGLU.so
+Missing recommended library: libX11.so
+Missing recommended library: libXi.so
+Missing recommended library: libXmu.so
+
+
+Installing the CUDA Samples in /home/explorer ...
+Copying samples to /home/explorer/NVIDIA_CUDA-8.0_Samples now...
+Finished copying samples.
+
+
+===========
+= Summary =
+===========
+
+
+Driver:   Not Selected
+Toolkit:  Installed in /usr/local/cuda-8.0
+Samples:  Installed in /home/explorer, but missing recommended libraries
+
+7. 添加环境变量
+
+使用gedit编辑bashrc文件：
+
+sudo gedit ~/.bashrc
+
+在最后添加两行（cuda安装在默认位置时）：
+
+export PATH=/usr/local/cuda-8.0/bin:$PATH
+
+export LD_LIBRARY_PATH=/usr/local/cuda-8.0/lib64:$LD_LIBRARY_PATH
+
+然后使用：source ~/.bashrc，使修改立即生效。
+ 
+8. Installing cuDNN on Linux
+
+a）download cuDNN from https://developer.nvidia.com/rdp/cudnn-download
+	cuDNN v7.1.1 Runtime Library for Ubuntu16.04 (Deb)
+
+	cuDNN v7.1.1 Developer Library for Ubuntu16.04 (Deb)
+
+	cuDNN v7.1.1 Code Samples and User Guide for Ubuntu16.04 (Deb)
+b）Installing from a Debian File
+
+    Navigate to your <cudnnpath> directory containing cuDNN Debian file.
+    Install the runtime library:
+
+    sudo dpkg -i libcudnn7_7.1.1.5-1+cuda8.0_amd64.deb
+
+    Install the developer library:
+
+    sudo dpkg -i libcudnn7-dev_7.1.1.5-1+cuda8.0_amd64.deb
+
+    Install the code samples and the cuDNN Library User Guide
+
+    sudo dpkg -i libcudnn7-doc_7.1.1.5-1+cuda8.0_amd64.deb
+
+c）Verifying
+
+
+To verify that cuDNN is installed and is running properly, compile the mnistCUDNN sample located in the /usr/src/cudnn_samples_v7 directory in the debian file.
+
+    Copy the cuDNN sample to a writable path.
+
+    $ cp -r /usr/src/cudnn_samples_v7/ $HOME
+
+    Go to the writable path.
+
+    $ cd  $HOME/cudnn_samples_v7/mnistCUDNN
+
+    Compile the mnistCUDNN sample.
+
+    $make clean && make
+
+    Run the mnistCUDNN sample.
+
+    $ ./mnistCUDNN
+
+    If cuDNN is properly installed and running on your Linux system, you will see a message similar to the following:
+
+    Test passed!
+
+Test informaton below
+/××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××
+
+cudnnGetVersion() : 7103 , CUDNN_VERSION from cudnn.h : 7103 (7.1.3)
+Host compiler version : GCC 5.4.0
+There are 1 CUDA capable devices on your machine :
+device 0 : sms 28  Capabilities 6.1, SmClock 1531.0 Mhz, MemSize (Mb) 12188, MemClock 5005.0 Mhz, Ecc=0, boardGroupID=0
+Using device 0
+
+Testing single precision
+Loading image data/one_28x28.pgm
+Performing forward propagation ...
+Testing cudnnGetConvolutionForwardAlgorithm ...
+Fastest algorithm is Algo 1
+Testing cudnnFindConvolutionForwardAlgorithm ...
+^^^^ CUDNN_STATUS_SUCCESS for Algo 0: 0.038720 time requiring 0 memory
+^^^^ CUDNN_STATUS_SUCCESS for Algo 1: 0.040864 time requiring 3464 memory
+^^^^ CUDNN_STATUS_SUCCESS for Algo 2: 0.052256 time requiring 57600 memory
+^^^^ CUDNN_STATUS_SUCCESS for Algo 4: 0.069280 time requiring 207360 memory
+^^^^ CUDNN_STATUS_SUCCESS for Algo 7: 0.074720 time requiring 2057744 memory
+Resulting weights from Softmax:
+0.0000000 0.9999399 0.0000000 0.0000000 0.0000561 0.0000000 0.0000012 0.0000017 0.0000010 0.0000000 
+Loading image data/three_28x28.pgm
+Performing forward propagation ...
+Resulting weights from Softmax:
+0.0000000 0.0000000 0.0000000 0.9999288 0.0000000 0.0000711 0.0000000 0.0000000 0.0000000 0.0000000 
+Loading image data/five_28x28.pgm
+Performing forward propagation ...
+Resulting weights from Softmax:
+0.0000000 0.0000008 0.0000000 0.0000002 0.0000000 0.9999820 0.0000154 0.0000000 0.0000012 0.0000006 
+
+Result of classification: 1 3 5
+
+Test passed!
+
+Testing half precision (math in single precision)
+Loading image data/one_28x28.pgm
+Performing forward propagation ...
+Testing cudnnGetConvolutionForwardAlgorithm ...
+Fastest algorithm is Algo 1
+Testing cudnnFindConvolutionForwardAlgorithm ...
+^^^^ CUDNN_STATUS_SUCCESS for Algo 0: 0.021312 time requiring 0 memory
+^^^^ CUDNN_STATUS_SUCCESS for Algo 1: 0.022528 time requiring 3464 memory
+^^^^ CUDNN_STATUS_SUCCESS for Algo 2: 0.047968 time requiring 28800 memory
+^^^^ CUDNN_STATUS_SUCCESS for Algo 7: 0.079872 time requiring 2057744 memory
+^^^^ CUDNN_STATUS_SUCCESS for Algo 4: 0.082752 time requiring 207360 memory
+Resulting weights from Softmax:
+0.0000001 1.0000000 0.0000001 0.0000000 0.0000563 0.0000001 0.0000012 0.0000017 0.0000010 0.0000001 
+Loading image data/three_28x28.pgm
+Performing forward propagation ...
+Resulting weights from Softmax:
+0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000714 0.0000000 0.0000000 0.0000000 0.0000000 
+Loading image data/five_28x28.pgm
+Performing forward propagation ...
+Resulting weights from Softmax:
+0.0000000 0.0000008 0.0000000 0.0000002 0.0000000 1.0000000 0.0000154 0.0000000 0.0000012 0.0000006 
+
+Result of classification: 1 3 5
+
+Test passed!
+
+××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××/
+
+
+9. Install NCCL2
+###########################################################################################################
+In order to download NCCL, ensure you are registered for the NVIDIA Developer Program.
+
+    Go to: NVIDIA NCCL home page.
+    Click Download.
+    Complete the short survey and click Submit.
+    Accept the Terms and Conditions. A list of available download versions of NCCL displays.
+    Select the NCCL version you want to install. A list of available resources displays. Refer to the following sections to choose the correct package depending on the Linux distribution you are using.
+
+9. 1. Ubuntu 14.04 LTS And Ubuntu 16.04 LTS
+Installing NCCL on Ubuntu requires you to first add a repository to the APT system containing the NCCL packages, then installing the NCCL packages through APT. There are two repositories available; a local repository and a network repository. Choosing the later is recommended to easily retrieve upgrades when newer versions are posted.
+
+    Install the repository.
+        For the local NCCL repository:
+
+        sudo dpkg -i nccl-repo-<version>.deb
+
+        For the network repository:
+
+        sudo dpkg -i nvidia-machine-learning-repo-<version>.deb
+
+    Update the APT database:
+
+    sudo apt update
+
+    Install the libnccl2 package with APT. Additionally, if you need to compile applications with NCCL, you can install the libnccl-dev package as well:
+    Note: If you are using the network repository, the following command will upgrade CUDA to the latest version.
+
+    sudo apt install libnccl2 libnccl-dev
+
+    If you prefer to keep an older version of CUDA, specify a specific version, for example:
+
+    sudo apt-get install libnccl2=2.0.0-1+cuda8.0 libnccl-dev=2.0.0-1+cuda8.0
+
+    Refer to the download page for exact package versions.
+
+
+###########################################################################################################################
+
+https://developer.nvidia.com/nccl/nccl-download
+
+NCCL 2.2.12 for Ubuntu 16.04 and CUDA 8
+
+nccl-repo-ubuntu1604-2.2.12-ga-cuda8.0_1-1_amd64
+
+
+
+
+10 Install Pytorch From Source
+
+https://github.com/pytorch/pytorch
+
+10.1 install Anaconda, but not miniconda!!!
+
+
+If you are installing from source, we highly recommend installing an Anaconda environment. You will get a high-quality BLAS library (MKL) and you get a controlled compiler version regardless of your Linux distro.
+
+Once you have Anaconda installed, here are the instructions.
+
+
+
+If you want to build on Windows, Visual Studio 2017 and NVTX are also needed.
+Install optional dependencies
+
+On Linux
+
+export CMAKE_PREFIX_PATH="$(dirname $(which conda))/../" # [anaconda root directory]
+
+# Install basic dependencies
+conda install numpy pyyaml mkl mkl-include setuptools cmake cffi typing
+conda install -c mingfeima mkldnn
+
+# Add LAPACK support for the GPU
+conda install -c pytorch magma-cuda80 # or magma-cuda90 if CUDA 9
+
+
+
+Get the PyTorch source
+
+git clone --recursive https://github.com/pytorch/pytorch
+cd pytorch
+
+Install PyTorch
+
+On Linux
+
+python setup.py install
+
+
+Please note that PyTorch uses shared memory to share data between processes, so if torch multiprocessing is used (e.g. for multithreaded data loaders) the default shared memory segment size that container runs with is not enough, and you should increase shared memory size either with --ipc=host or --shm-size command line options to nvidia-docker run.
+
+after installation, you can test if pytorch could work well or not
+
+
+z@z-MS-7A69:~$ python
+Python 3.6.4 |Anaconda, Inc.| (default, Jan 16 2018, 18:10:19) 
+[GCC 7.2.0] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import torch
+>>> 
+
+
+11 Install Fairseq
+
+https://github.com/pytorch/fairseq
+
+Currently fairseq requires PyTorch version >= 0.4.0. Please follow the instructions here: https://github.com/pytorch/pytorch#installation.
+
+If you use Docker make sure to increase the shared memory size either with --ipc=host or --shm-size as command line options to nvidia-docker run.
+
+After PyTorch is installed, you can install fairseq with:
+
+pip install -r requirements.txt
+
+python setup.py build
+python setup.py develop
+
+TEST
+
+CUDA_VISIBLE_DEVICES=0,1  python train.py data-bin/zjb   --lr 0.25 --clip-norm 0.1 --dropout 0.2 --max-tokens 8000 --max-epoch 100 --max-sentences 300 --max-sentences-valid 300 --batch-size 100 --max-source-positions 12000 --max-target-positions 12000  --arch fconv_iwslt_de_en --save-dir checkpoints/f --skip-invalid-size-inputs-valid-test
+
+
+| epoch 033 | loss 0.246 | ppl 1.19 | wps 118700 | ups 8.4 | wpb 14201 | bsz 13 | num_updates 304524 | lr 2.5e-05 | gnorm 0.043 | clip 0% | oom 0 | sample_size 14200.7
+| epoch 033: 100%|█| 9228/9228 [18:24<00:00,  8.36it/s, loss=0.246, ppl=1.19, wps=118700, ups=8.4, wpb=14201, bsz=13, num_updates=304524, lr=2.5e-05, gnorm=0.043, clip=0%, oom=0, sample_size
+
+| epoch 033 | loss 0.246 | ppl 1.19 | wps 118700 | ups 8.4 | wpb 14201 | bsz 13 | num_updates 304524 | lr 2.5e-05 | gnorm 0.043 | clip 0% | oom 0 | sample_size 14200.7
+| epoch 033 | valid on 'valid' subset | valid_loss 0.233831 | valid_ppl 1.18 | sample_size 3426.02                                                                                            
+| epoch 033 | valid on 'valid' subset | valid_loss 0.233831 | valid_ppl 1.18 | sample_size 3426.02
+
+
+python generate.py data-bin/zjb  --path data-bin/zjb/best.pt --skip-invalid-size-inputs-valid-test
+Namespace(beam=5, cpu=False, data='data-bin/zjb', gen_subset='test', lenpen=1, log_format=None, log_interval=1000, max_len_a=0, max_len_b=200, max_sentences=None, max_source_positions=1024, max_target_positions=1024, max_tokens=6000, nbest=1, no_beamable_mm=False, no_early_stop=False, no_progress_bar=False, num_shards=1, path=['data-bin/zjb/best.pt'], prefix_size=0, quiet=False, remove_bpe=None, replace_unk=None, sampling=False, score_reference=False, seed=1, shard_id=0, skip_invalid_size_inputs_valid_test=True, source_lang=None, target_lang=None, unkpen=0, unnormalized=False)
+| loading model(s) from data-bin/zjb/best.pt
+| [de] dictionary: 17913 types
+| [en] dictionary: 12 types
+| data-bin/zjb test 19 examples
+
+安 清 字 世 高 安 息 國 王 政 后 之 太 子 也 幼 懷 淳 孝 敬 養 竭 誠 惻 隱 之 仁 爰 及 蠢 類 其 動 言 立 行 若 踐 規 矩 焉 加 以 志 業 聰 敏 刻 意 好 學 外 國 典 籍 莫 不 該 貫 七 曜 五 行 之 象 風 角 雲 物 之 占 推 步 盈 縮 悉 窮 其 變 兼 洞 曉 醫 術 妙 善 鍼 䘑 覩 色 知 病 投 藥 必 濟 乃 至 鳥 獸 嗚 呼 聞 聲 知 心 於 是 俊 異 之 名 被 於 西 域 遠 近 隣 國 咸 敬 而 偉 之 世 高 雖 在 居 家 而 奉 戒 精 峻 講 集 法 施 與 時 相 續 後 王 薨 將 嗣 國 位 乃 深 惟 苦 空 厭 離 名 器 行 服 既 畢 遂 讓 國 與 叔 出 家 修 道 博 綜 經 藏 尤 精 阿 毘 曇 學 諷 持 禪 經 略 盡 其 妙 既 而 遊 方 弘 化 遍 歷 諸 國 以 漢 桓 帝 之 初 始 到 中 夏 世 高 才 悟 幾 敏 一 聞 能 達 至 止 未 久 即 通 習 華 語 於 是 宣 釋 眾 經 改 胡 為 漢 出 安 般 守 意 陰 持 入 經 大 小 十 二 門 及 百 六 十 品 等 初 外 國 三 藏 眾 護 撰 述 經 要 為 二 十 七 章 世 高 乃 剖 析 護 所 集 七 章 譯 為 漢 文 即 道 地 經 也 其 先 後 所 出 經 凡 四 十 五 部 義 理 明 析 文 字 允 正 辯 而 不 華 質 而 不 野 凡 在 讀 者 皆 斖 斖 而 不 惓 焉 世 高 窮 理 盡 性 自 識 宿 緣 多 有 神 跡 世 莫 能 量 初 世 高 自 稱 先 身 已 經 為 安 息 王 子 與 其 國 中 長 者 子 俱 共 出 家 分 衛 之 時 施 主 不 稱 同 學 輒 怒 世 高 屢 加 呵 責 同 學 悔 謝 而 猶 不 悛 改 如 此 二 十 餘 年 乃 與 同 學 辭 訣 云 我 當 往 廣 州 畢 宿 世 之 對 卿 明 經 精 進 不 在 吾 後 而 性 多 恚 怒 命 過 當 受 惡 形 我 若 得 道 必 當 相 度 既 而 遂 適 廣 州 值 寇 賊 大 亂 行 路 逢 一 少 年 唾 手 拔 刀 曰 真 得 汝 矣 世 高 笑 曰 我 宿 命 負 卿 故 遠 來 相 償 卿 之 忿 怒 故 是 前 世 時 意 也 遂 申 頸 受 刃 容 無 懼 色 賊 遂 殺 之 觀 者 填 路 莫 不 駭 其 奇 異 既 而 神 識 還 為 安 息 王 太 子 即 名 世 高 時 身 也 世 高 遊 化 中 國 宣 經 事 畢 值 靈 帝 之 末 關 洛 擾 亂 乃 杖 錫 江 南 云 我 當 過 廬 山 度 昔 同 學 行 達 䢼 亭 湖 廟 此 廟 舊 有 靈 驗 商 旅 祈 禱 乃 分 風 上 下 各 無 留 滯 常 有 乞 神 竹 者 未 許 輒 取 舫 即 覆 沒 竹 還 本 處 自 是 舟 人 敬 憚 莫 不 懾 影 世 高 同 <unk> 三 十 餘 船 奉 牲 請 福 神 乃 降 祝 曰 舫 有 沙 門 可 更 呼 上 客 咸 共 驚 愕 請 世 高 入 廟 神 告 世 高 曰 吾 昔 在 外 國 與 子 俱 出 家 學 道 好 行 布 施 而 性 多 瞋 怒 今 為 䢼 亭 湖 神 周 迴 千 里 並 吾 所 統 以 布 施 故 珍 玩 無 數 以 瞋 恚 故 墮 此 神 中 今 見 同 學 悲 欣 可 言 壽 盡 旦 夕 而 醜 形 長 大 若 於 此 捨 命 穢 污 江 湖 當 度 山 西 空 澤 中 也 此 身 滅 恐 墮 地 獄 吾 有 絹 千 匹 并 雜 寶 物 可 為 我 立 塔 營 法 使 生 善 處 也 世 高 曰 故 來 相 度 何 不 見 形 神 曰 形 甚 醜 異 眾 人 必 懼 世 高 曰 但 出 眾 不 怪 也 神 從 床 後 出 頭 乃 是 大 蟒 蛇 至 世 高 膝 邊 淚 落 如 雨 不 知 尾 之 長 短 世 高 向 之 胡 語 傍 人 莫 解 蟒 便 還 隱 世 高 即 取 絹 物 辭 別 而 去 舟 侶 颺 帆 神 復 出 蟒 身 登 山 頂 而 望 眾 人 舉 手 然 後 乃 滅 倏 忽 之 頃 便 達 豫 章 即 以 廟 物 造 立 東 寺 世 高 去 後 神 即 命 過 暮 有 一 少 年 上 船 長 跪 世 高 前 受 其 呪 願 忽 然 不 見 世 高 謂 船 人 曰 向 之 少 年 即 䢼 亭 廟 神 得 離 惡 形 矣 於 是 廟 神 歇 沒 無 復 靈 驗 後 人 於 西 山 澤 中 見 一 死 蟒 頭 尾 相 去 數 里 今 尋 陽 郡 蛇 村 是 其 處 也 於 是 頃 到 廣 州 尋 其 前 世 害 己 少 年 時 少 年 尚 在 年 已 六 十 餘 世 高 徑 投 其 家 共 說 昔 日 償 對 時 事 并 敘 宿 緣 歡 善 相 向 云 吾 猶 有 餘 報 今 當 往 會 稽 畢 對 廣 州 客 深 悟 世 高 非 凡 豁 然 意 解 追 悔 前 愆 厚 相 資 供 乃 隨 世 高 東 行 遂 達 會 稽 至 便 入 市 正 值 市 有 鬪 者 亂 相 歐 擊 誤 中 世 高 應 時 命 終 廣 州 客 頻 驗 二 報 遂 精 懃 佛 法 具 說 事 緣 遠 近 聞 知 莫 不 悲 歎 明 三 世 之 有 徵 也 高 本 既 王 種 名 高 外 國 所 以 西 方 賓 旅 猶 呼 安 侯 至 今 為 號 焉 天 竺 國 自 稱 書 為 天 書 語 為 天 語 音 訓 詭 蹇 與 漢 殊 異 先 後 傳 譯 多 致 謬 濫 唯 世 高 出 經 為 群 譯 之 首 安 公 以 為 若 及 面 稟 不 異 見 聖 列 代 明 德 咸 讚 而 思 焉
+T-6	C ， C C ， C C C C C C C C C 。 C C C ， C C C ， C C C ， C C C ， C C C C ， C C C C 。 C C C C C ， C C C ， C C C ， C C C 。 C C C C C ， C C C C C ， C C C ， C C C 。 C C C C ， C C C ， C C C ， C C C 。 C C C C C ， C C C 。 C C C C C ， C C C ， C C C ， C C C C 。 C C C C C ， C C C C ， C C C ， C C C 。 C C ， C C C ， C C C C ， C C C 。 C C C ， C C C C ， C C C 。 C C C ， C C C C C ， C C C ， C C C 。 C C C C C ， C C C ， C C C C C ， C C C 。 C C C C C ， C C C ， C C C ， C C C C 。 C C C C C ， C C C ， C C C C 、 C C C 、 C C C C C C C C C C 。 C C C C C C C C C C C C C C C ， C C C C C C C C C ， C C C ， C C C C 。 C C C C C C C C C C ， C C C ， C C C ， C C C ， C C C ， C C C ， C C C C C C 。 C C C C C ， C C C ， C C C ， C C C 。 ， C C C ： C C C C C C C C ， C C C C C C C C C C 。 C C C ， C C C ， C C C ， C C C C C ， C C C ， C C C C 。 C C C C C ， C C C C C C ： C C C C C C C C C 。 C C C C ， C C C ， C C C C ， C C C C C 。 C C C ， C C C 。 C C C C C ， C C C C ， C C C C C ， C C C C ： C C C ！ C C C ： C C C C ， C C C C ， C C C ， C C C C C C 。 C C C C ， C C C 。 C C C 。 C C C ， C C C C C 。 C C C C C C C C C C ， C C C C C C 。 C C C C C ， C C C ， C C C C ， C C C ， C C C C 。 ： C C C C C C C C 。 C C C C C 。 C C C C C ， C C C ， C C C C ， C C C 。 C C C C C ， C C C ， C C C ， C C C 。 C C C C C ， C C C 。 C C C C C C C ， C C C 。 C C C C ： C C C ， C C C 。 C C C C ， C C C C 。 C C C C ： C C C C ， C C C C C C ， C C C ， C C C C 。 C C C C C ， C C C ， C C C 。 C C C ， C C C ； C C C ， C C C 。 C C C ， C C C ！ C C C ， C C C C ， C C C C ， C C C ， C C C C C C C 。 C C ， C C C ， C C C C ， C C C ， C C C C C C ， C C C C 。 C C ： C C C ， C C C ？ C ： C C C ， C C C 。 C C ： C ， C C C 。 C C C C C ， C C C C ， C C C C ， C C C ， C C C C C 。 C C C C C ， C C C ， C C C 。 C C C C C ， C C C 。 C C C ， C C C C ， C C C C 。 C C C ， C C C 。 C C C ， C C C ， C C C C C C C 。 C C C ， C C C 。 C C C C C C ， C C C C ， C C C ， C C C 。 C C C C C ： C C C ， C C C C ， C C C C 。 C C C C C ， C C C 。 C C C C C C C C C C ， C C C C C 。 C C C C C C C C C 。 C C C C C ， C C C C C C C 。 C C C C ， C C C C 。 C C C C C ， C C C C C C C ， C C C ， C C C 。 ： C C C C ， C C C C C C 。 C C C C C C C C ， C C C ， C C C ， C C C 。 C C C C C ， C C C 。 C C C ， C C C C C ， C C C ， C C C ， C C C 。 C C C C C C ， C C C C ， C C C 。 C C C ， C C C ， C C C C C C 。 C C C C ， C C C ， C C C C C C C C C ， C C C C 。 C C C C C C C C ， C C C ， C C C ， C C C ， C C C ， C C C 。 C C C C ， C C C C 。 C C C C C C C ， C C C 。 C C C ， C C C C 。
+
+| Translated 19 sentences (3805 tokens) in 3.4s (1105.57 tokens/s)              
+| Generate test with beam=5: BLEU4 = 20.95, 52.0/51.3/50.3/49.3 (BP=0.413, ratio=0.531, syslen=3786, reflen=7133)
+
+
